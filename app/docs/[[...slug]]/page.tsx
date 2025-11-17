@@ -19,10 +19,11 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
     return notFound();
   }
 
-  const MDX = page.data.body;
+  // @ts-ignore
+  const { body: MDX, toc } = page.data;
 
   return (
-    <DocsPage toc={page.data.toc}>
+    <DocsPage toc={toc}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>

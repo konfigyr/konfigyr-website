@@ -3,16 +3,14 @@ import { loader } from 'fumadocs-core/source';
 import { icons } from 'lucide-react';
 import { createElement } from 'react';
 
-function loadIcon(name: string) {
-  if (name && name in icons) {
-    return createElement(icons[name as keyof typeof icons]);
-  }
-
-  return null;
-}
-
 export const source = loader({
   baseUrl: '/docs',
   source: docs.toFumadocsSource(),
-  icon: loadIcon,
+  icon: (icon) => {
+    if (icon && icon in icons) {
+      return createElement(icons[icon as keyof typeof icons]);
+    }
+
+    return null;
+  },
 });
