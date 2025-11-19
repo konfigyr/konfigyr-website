@@ -1,0 +1,88 @@
+---
+title: Namespace management
+description: Understand how namespaces, tenancy, and user access are structured in Konfigyr.
+---
+import { Card, CardLink } from '@/components/docs/card';
+
+Namespaces are the core building block of Konfigyr’s multi-tenant architecture, providing strict isolation
+between organizations, teams, and projects. This section explains how Namespaces work, how members are managed,
+and how access is controlled across the platform.
+
+Konfigyr’s permission model is designed to be predictable, auditable, and secure, ensuring that configuration
+data is always protected and that the right people have access to the right resources.
+
+## What Is a Namespace?
+
+A Namespace is the primary container of ownership within Konfigyr. Each Namespace represents an organization,
+business unit, or team. All critical resources, projects, configuration properties, environments, members, and
+billing settings exist inside a Namespace. It's the foundation enabling Konfigyr to operate as a secure multi-tenant platform.
+
+A Namespace provides:
+
+- **Data isolation**: No resource is shared across namespaces.
+- **Security boundaries**: Keys, encryption, and permissions are separated.
+- **Organizational structure**: Group related projects under one logical owner.
+- **Centralized governance**: Apply security policies at the tenant level.
+
+Each Namespace contains:
+
+- Members (user accounts who belong to the Namespace)
+- Roles assigned to each Member
+- Services (Spring Boot applications managed in Konfigyr)
+- Security Policies (IP restrictions, identity rules, etc.)
+- Encryption Keysets
+- Licensing & Billing (for SaaS users)
+- Audit Records
+
+## Members
+
+A Member is a user who has been granted access to a Namespace. Members are invited by organization administrators and
+must accept the invitation before accessing Namespace resources.
+
+Member lifecycle:
+- Invitation is sent by an admin.
+- User authenticates using the IdP.
+- User account is linked to the Namespace.
+- A default or explicitly assigned role defines permissions.
+
+### Roles & Access Levels
+
+Konfigyr permissions system is based on a role-based access control (RBAC) model. The system allows you to define
+roles and assign them to user accounts and OAuth applications. Each role has a set of permissions that define what
+actions a member can perform. Konfigyr ships with a built-in set of roles:
+
+<div className="grid grid-cols-2 gap-4 my-6">
+  <Card title="Administrator">
+    The highest level of privilege that grants full administrative access to manage Namespace settings, members,
+    services, security policies, billing...
+  </Card>
+
+  <Card title="User">
+    This is the default role for most users. It provides users with a read and write access to service configuration
+    properties, create and manage change requests.
+  </Card>
+</div>
+
+#### Service permissions
+
+Additionally, Konfigyr provides service-level permissions within a Namespace to define additional restrictions
+to environment-level permissions, approval workflows, or restricted access to production profiles This allows
+us to define fine-grained access controls such as:
+
+- Developers can edit only `dev` and `staging` environments
+- Only Admins can approve `production` environment changes
+
+## Encryption & Isolation
+
+Namespaces also act as cryptographic boundaries. When they are created, they are assigned with a unique
+Key Encryption Key (KEK). This key is used to secure the Data Encryption Keysets (DEKs) which encrypt
+the data stored within the Namespace.
+
+This ensures that compromise of one Namespace does not expose another as our keys cannot be reused across
+tenants.
+
+<CardLink
+  title="Cryptography"
+  description="Learn more about how encryption and decryption works in Konfigyr."
+  href="/docs/architecture/cryptography"
+/>

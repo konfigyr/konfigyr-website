@@ -1,0 +1,102 @@
+---
+title: Artifactory
+description: Artifact configuration metadata repository
+---
+import { CardLink } from '@/components/docs/card';
+
+The Konfigyr Artifactory is the central system responsible for collecting, normalizing, indexing, and versioning
+configuration metadata extracted from Spring Boot applications and libraries. It forms the backbone of Konfigyr's
+type‑safe configuration experience by maintaining a unified, authoritative understanding of all configuration
+properties published by services across an organization. From ingestion to provenance tracking and UI consumption,
+the Artifactory ensures that configuration data is discoverable, consistent, validated, and historically traceable.
+
+## Metadata Ingestion
+
+The lifecycle of configuration metadata begins within the services and libraries themselves. Developers typically
+annotate their configuration classes using Spring Boot’s `@ConfigurationProperties` or rely on auto‑configuration
+libraries that ship with their own metadata. During each build, the Maven and Gradle plugins provided by Konfigyr
+extract this metadata from the generated `spring-configuration-metadata.json` files. These files include property
+names, types, default values, documentation entries, deprecation markers, and occasionally value hints.
+
+The plugins augment this metadata by enriching it with JSON Schema definitions. This schema generation step is critical
+because it translates raw configuration information into a precise structural description that can be validated,
+introspected, and rendered by the Konfigyr UI. Each plugin bundles the extracted metadata, the corresponding artifact
+identity, its version, and builds provenance information into an ingestion request, which is sent to the Konfigyr
+Artifactory’s API.
+
+<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+  <CardLink
+    title="Artifactory SDK"
+    href="https://github.com/konfigyr/konfigyr-artifactory"
+    target="_blank"
+    rel="noopener"
+  >
+    Check out the Artifactory Java API on GitHub to learn more about the data structures that are accepted
+    by the Artifactory REST and are exposed by the SDK.
+  </CardLink>
+  <CardLink
+    title="Artifactory Plugin"
+    href="https://github.com/konfigyr/konfigyr-plugin"
+    target="_blank"
+    rel="noopener"
+  >
+    Check out the Artifactory Plugin repository on GitHub to setup your CI pipeline to automatically upload the
+    configuration metadata to the Artifactory.
+  </CardLink>
+</div>
+
+## Processing and indexing metadata
+
+Once metadata reaches the Artifactory, it is first stored as a pending release. A release represents a single ingestion
+event. Release acts as the unit of work for the system’s internal processing pipeline. The Artifactory asynchronously
+processes these pending releases by parsing the uploaded metadata, validating its structure, and ensuring that it
+adheres to the constraints defined by the Konfigyr specification.
+
+During this phase, the Artifactory performs deduplication and normalization. Property descriptors are compared across
+previously processed versions of the same artifact to identify changes, additions, and removals. The Artifactory also
+resolves type information and ensures that comparable data is stored in a canonical form that can be indexed efficiently.
+
+When processing is complete, the release is marked as completed, and the artifact version becomes available to other
+parts of the system. Failed ingestion attempts, whether caused by malformed metadata or internal validation errors,
+are marked accordingly and recorded for auditing.
+
+## Provenance tracking and historical awareness
+
+A defining characteristic of the Konfigyr Artifactory is its emphasis on provenance. Every artifact version carries
+contextual metadata that describes where it came from, how it was built, and which environment produced it.
+
+The ingestion API accepts build information such as the commit hash, repository reference, CI pipeline identifier,
+and timestamps associated with the build. These attributes allow architects and auditors to reason about configuration
+lineage, trace error regressions, and maintain a complete understanding of how configuration evolved over time.
+
+Provenance is not limited to source‑level metadata. The Artifactory models internal relationships such as which
+artifact versions belong to a release, which manifests refer to those versions, and which services consume them.
+This graph of relationships makes it possible to answer complex queries, such as identifying which services are
+impacted by a deprecated configuration property or which dependency upgrade introduced a breaking change.
+
+## Using Metadata for a Type‑Safe configuration experience
+
+Once artifacts and their metadata are indexed, they become available to Konfigyr services that rely on accurate
+configuration definitions. A service declares which artifact versions it depends on by publishing a manifest.
+This manifest lists all libraries and internal modules the service uses, cross-referenced by their artifact coordinates
+and versions. By resolving the manifest, the Artifactory aggregates all configuration properties from the declared
+artifacts into a unified property catalogue.
+
+This unified set of property descriptors is what powers the type-safe user interface. Each descriptor includes a
+JSON Schema definition that fully describes the shape of the property: whether it is scalar, a list of complex objects,
+a nested structure, or a dynamic map. The UI interprets this schema to render corresponding input components, validate
+user input, prevent incompatible values, and provide context-sensitive help and hints.
+
+When a user configures an application through the UI, Konfigyr validates the configuration against the schema before
+persisting it. The exported configuration files, either YAML or Java properties format, are generated by transforming the
+validated JSON structure using Spring Boot’s relaxed binding rules. This ensures that applications receive correctly
+structured configuration files that are guaranteed to match the metadata published by their dependent artifacts.
+
+## Closing remarks
+
+The Artifactory is the foundation of Konfigyr’s configuration intelligence. Through its ingestion, processing, and
+provenance tracking workflows, it enforces consistency and enables rich features such as type-safe editing, dependency
+impact analysis, and historical auditing. By standardizing how configuration metadata flows from code through build
+pipelines and into the centralized platform, it ensures that developers and architects share a common, reliable source
+of truth for configuring Spring Boot applications.
+

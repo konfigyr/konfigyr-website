@@ -1,0 +1,101 @@
+---
+title: Cryptography
+description: Overview of the cryptography and key management used in Konfigyr.
+---
+import { CardLink } from '@/components/docs/card';
+
+The Konfigyr cryptography subsystem provides the foundational security guarantees that protect application data,
+configuration values, and sensitive identity information across all deployment models. Cryptographic
+operations are isolated in a dedicated bounded context that leverages proven primitives from
+[Google Tink](https://developers.google.com/tink). Konfigyr ensures that confidentiality, integrity, and key lifecycle
+management are handled consistently and safely while remaining transparent to applications and services interfacing
+with the platform.
+
+<CardLink
+  title="Konfigyr crypto Java SDK"
+  href="https://github.com/konfigyr/konfigyr-crypto"
+  target="_blank"
+  rel="noopener"
+>
+  Check out the Konfigyr Crypto Java API on GitHub to learn more about how Konfigyr uses Tink to securely manage
+  and store keysets in Spring Boot applications.
+</CardLink>
+
+## Primary key initialization and configuration
+
+Every Konfigyr installation begins with the bootstrap of a primary, or master, encryption key, known as the
+Key Encryption Key (KEK). This key forms the root of trust for the entire system but is never stored directly within
+the database. In SaaS environments, the KEK is generated and stored inside an external cloud Key Management Service
+such as AWS KMS, Google Cloud KMS, or Azure Key Vault.
+
+For on-premise deployments, administrators supply the KEK securely through platform configuration, typically via
+Kubernetes secrets with strict access policies.
+
+When the Konfigyr cryptography module initializes, it uses the provided KEK only long enough to initialize the Tink
+keysets responsible for storing and managing Data Encryption Keys. The KEK itself is never written to disk or
+persisted in logs. Instead, it encrypts all application-level key material, ensuring that even if the database is
+compromised, encrypted values remain opaque to any attacker without KMS access.
+
+## Namespace isolation
+
+Konfigyr implements a strict isolation model where each Namespace is assigned its own dedicated key store. This means
+that different teams, organizations, or business units operating within the platform receive completely segregated
+encryption domains. A compromise of one namespace's keys does not threaten any other namespace.
+
+When a namespace is created, the cryptography service generates new keysets associated with that namespace and protects
+it using the KEK. These namespace-level keysets serve as containers for all cryptographic keys required by downstream
+services, including the Data Encryption Keys used by individual applications. The use of namespace‑scoped encryption
+domains allows fine-grained auditing, simplifies compliance reviews, and aligns with multi-tenant security principles.
+
+## Data encryption keys (DEKs)
+
+Within each namespace, Konfigyr provisions individual Data Encryption Keys (DEKs) for every service that stores
+sensitive configuration properties. A DEK is used exclusively by the service it belongs to, and always for the purpose
+of encrypting and decrypting configuration values. These configurations are encrypted using the 256-bit Advanced
+Encryption Standard (AES) cipher in the Galois Counter Mode (GCM) with 96-bit nonces, or **AES‑256‑GCM** for short,
+algorithm, benefiting from its strong guarantees around confidentiality, authenticity, and resistance to tampering.
+
+When a service interacts with the Konfigyr configuration API, its associated DEK is automatically selected based on
+the namespace and service identity. The cryptography subsystem handles the encryption and decryption transparently,
+ensuring that services always operate on plaintext values while encrypted data persists securely in the database.
+
+## Key rotation and lifecycle
+
+Konfigyr supports both usage‑based and interval‑based rotation strategies for Data Encryption Keys. Usage‑based
+rotation is triggered when a DEK reaches a threshold of encryption operations, ensuring no single key encrypts
+excessive volumes of data. Interval‑based rotation occurs according to scheduled policies such as rotating keys
+monthly or quarterly.
+
+When a DEK is rotated, the newly generated key becomes the primary key within the namespace's keyset and is used for
+all future encryption operations. Older keys remain available in a non-primary state for as long as necessary to
+decrypt previously stored values. This allows seamless decryption of legacy configuration records without forced
+re‑encryption and without breaking running services.
+
+The lifecycle of each DEK—from creation through rotation to eventual retirement—is fully tracked, providing
+traceability for audits and compliance checks. Because key material is always stored encrypted using the KEK and never
+exposed to the application layer, Konfigyr ensures that rotations and updates occur without service downtime or risk of
+accidental disclosure.
+
+## Secure configuration storage and access
+
+All sensitive configuration values stored in Konfigyr are encrypted using the service-specific DEK. The cryptography
+subsystem applies AES‑256‑GCM, producing authenticated ciphertext that ensures both confidentiality and tamper detection.
+The encrypted payload, along with associated metadata such as the key identifier and authentication tag, is stored
+inside the configuration database. When services retrieve configuration values, the system resolves the correct DEK
+from the namespace keyset and performs transparent decryption before returning results.
+
+This layered encryption model reinforces the overall security architecture: the primary KEK protects keysets,
+the keysets contain DEKs, and the DEKs protect application configuration values. Together, this ensures that no
+privileged insider, disgruntled administrator, or compromised component can gain unauthorized access to plaintext
+configuration values. Even full database leakage does not compromise confidentiality without access to the KMS‑secured KEK.
+
+## Summary
+
+Konfigyr’s cryptography subsystem provides robust, multi‑layered protection for sensitive configuration data. Through
+its use of namespace‑scoped keysets, service‑level DEKs, AES‑256‑GCM encryption, and automatic key rotation, it
+ensures that confidentiality and integrity are maintained across all environments and deployment topologies.
+
+By isolating and centralizing cryptographic responsibilities, developers and architects gain a reliable and secure
+foundation for application configuration management, while compliance teams benefit from clear auditability and
+provable encryption guarantees.
+
