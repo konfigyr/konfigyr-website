@@ -69,8 +69,9 @@ export function CardLink({ title, description, icon, disabled, className, childr
           title={title}
           description={description}
           icon={icon}
-          children={children}
-        />
+        >
+          {children}
+        </CardContents>
       </Link>
     </CardContainer>
   )
@@ -84,8 +85,9 @@ export function Card({ title, description, icon, disabled, className, children }
         title={title}
         description={description}
         icon={icon}
-        children={children}
-      />
+      >
+        {children}
+      </CardContents>
     </CardContainer>
   )
 }
