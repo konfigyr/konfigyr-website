@@ -1,0 +1,101 @@
+---
+title: Identity and Access Management
+description: Understand how authentication, identity resolution, roles, and permissions are managed.
+---
+
+The Konfigyr Identity Provider (IdP) is the authentication and authorization cornerstone of the platform.
+It is responsible for user identity resolution, OAuth2/OIDC token issuance, and enforcing access policies
+across all Konfigyr services.
+
+This documentation explains how the `id.konfigyr` works and introduces the core concepts: accounts,
+third-party applications, OAuth2 scopes, OpenID Connect, and how authentication flows through the system.
+
+## What Is the Konfigyr Identity Provider?
+
+The IdP is built using Spring Authorization Server and serves as the central authority for:
+
+- Authenticating users
+- Managing user accounts
+- Integrating with external identity providers
+- Issuing OAuth2 and OpenID Connect (OIDC) tokens
+- Authorizing applications that connect to the Konfigyr API
+
+It **does not** store any user passwords; instead, it brokers access to upstream identity providers.
+
+## Accounts
+
+An account represents a user identity inside Konfigyr. It could be a developer, admin, or any other human entity
+interacting with resources within the Namespace.
+
+Accounts are created when a user signs in for the first time through an external identity provider. The Konfigyr
+Identity service stores only the minimal profile information (e.g., name, email (unique), avatar).
+
+Konfigyr platform allows user accounts to be members of multiple Namespaces, and this forms the foundation of
+our multi‑tenancy. Permissions are not attached to accounts directly, but via roles inside each Namespace.
+
+### External Identity Providers
+
+Konfigyr supports upstream identity providers for authentication, such as:
+
+- OAuth2 providers (GitHub, GitLab)
+- OIDC providers (Azure AD, Google, Keycloak)
+- SAML providers (planned)
+
+## Third‑Party Applications (OAuth2 Clients)
+
+Third‑party applications (often called OAuth2 Clients) are external systems that request access tokens to interact
+with the Konfigyr REST API.
+
+Each OAuth client has:
+
+- A unique client ID
+- A client secret
+- A list of allowed redirect URIs
+- A set of authorized scopes
+
+The IdP verifies that a client is allowed to request a token and enforces scope restrictions.
+
+#### OAuth2 Scopes
+
+Scopes define what an application is allowed to do after it obtains an access token. Scopes in Konfigyr reflect the
+platform’s permission model.
+
+Examples:
+
+- `openid`: required for OIDC
+- `profile`: allows your OAuth application to access basic user info
+- `namespaces:read`: read-only access to namespaces
+
+Scopes ensure:
+
+- Granular access control
+- Least privilege by default
+- Separation between user identity and application permissions
+
+The REST API checks scopes in every request.
+
+## OpenID Connect (OIDC)
+
+Konfigyr uses OpenID Connect on top of OAuth2 to support user identity. OIDC adds user authentication to OAuth2 by defining:
+
+- ID Tokens: signed JWTs containing user identity claims
+- UserInfo endpoint: an API to fetch profile information
+- Standard scopes: (openid, email, profile)
+
+What OIDC enables inside Konfigyr:
+
+- Single Sign‑On (SSO)
+- Login via external identity providers (Google, Azure AD, GitHub, etc.)
+- Account linking
+- Secure frontend login flows via Authorization Code + PKCE
+
+## Token Types
+
+Konfigyr IdP issues the following tokens:
+
+- Access Token (JWT): Used by clients to call the REST API.
+- ID Token: Contains identity claims (only for OIDC authentication).
+- Refresh Token: Used to renew access without re-authenticating.
+
+Tokens are signed using dedicated signing keysets managed by the cryptography domain.
+

@@ -1,0 +1,174 @@
+---
+title: How Konfigyr Works
+description: Understand the basic concepts of Konfigyr.
+---
+import { Card, CardLink } from '@/components/docs/card';
+
+Konfigyr is a deeply integrated configuration management platform designed specifically for Spring Boot applications.
+Unlike generic secret managers or key-value stores, Konfigyr understands Spring Boot’s structure, metadata, and
+lifecycle. This enables a uniquely type-safe, secure, and automated configuration experience.
+
+This document provides a detailed, end-to-end explanation of how Konfigyr works: from metadata ingestion via
+build plugins, to secure storage, to distribution into applications running in Spring Cloud, Kubernetes,
+or containerized environments.
+
+## Konfigyr’s Core Philosophy
+
+Konfigyr is built around three guiding principles:
+
+<div className="space-y-4">
+  <Card title="1. Configuration is king">
+    Configuration metadata should is considered a first-class citizen of the application source code,
+    not a separate artifact. The Spring Boot configuration metadata is used to validate configuration at the source.
+  </Card>
+
+  <Card title="2. Correctness">
+    Developers should never ship broken or invalid configs. A type-safe UI prevents typos, missing fields,
+    and invalid values.
+  </Card>
+
+  <Card title="3. Security and distribution">
+    Configuration must be secure, isolated, and easy to distribute. Encryption, keysets, and multiple delivery
+    mechanisms ensure this.
+  </Card>
+</div>
+
+Konfigyr’s workflow consists of these main stages:
+
+1. Developers define configuration properties in a Spring Boot project.
+2. Konfigyr plugins extract metadata during the build process.
+3. Metadata is pushed to the Konfigyr API.
+4. Konfigyr builds a type-safe UI based on the metadata.
+5. Developers manage and version configuration in Konfigyr.
+6. Konfigyr securely distributes config to applications via:
+    - Spring Cloud integration
+    - Kubernetes Secrets
+    - REST API endpoints
+
+
+## Metadata Ingestion via plugins
+
+Konfigyr uses custom Gradle and Maven plugins that run as part of the application’s build process.
+
+What the plugins do:
+
+#### Extract Spring Boot configuration metadata
+
+Using Spring Boot’s metadata generation system (spring-boot-configuration-processor), the plugins collect:
+
+- Property names
+- Types (String, int, List, Duration, etc.)
+- Descriptions
+- Default values
+- Deprecation info
+- Validation rules
+
+#### Normalize Metadata
+
+The plugins convert Spring’s metadata into Konfigyr’s internal format based on JSON Schema.
+
+#### Push Metadata to the Konfigyr API
+
+The plugin authenticates against Konfigyr using a service-scoped OAuth2 application. This populates the internal
+registry of configuration definitions. This is what makes Konfigyr truly type-safe:
+
+- The UI knows what data types to render.
+- The system can prevent invalid configurations.
+- Changes to the application’s configuration model automatically update the UI.
+
+## Artifactory-Like configuration distribution
+
+Konfigyr implements an approach similar to artifact repositories (e.g., Nexus). This solves the tricky problem of
+config versioning and multi-environment distribution.
+
+Each Spring Boot service in Konfigyr has:
+
+- Profiles (env-specific configs like dev, staging, production)
+- Revisions (every change produces a new version)
+- Snapshots and releases (draft vs. approved configs)
+
+Using this approach, Spring Boot applications get immutable, versioned configs. Developers can perform rollbacks in
+an instant. Approval workflows become part of the distribution pipeline.
+
+## Type-Safe UI
+
+Konfigyr’s biggest differentiator is the type-safe configuration editor. Using the metadata pushed from plugins,
+the UI automatically generates:
+
+- Correct input components (text fields, numbers, checkboxes, enums, durations…)
+- Context-aware validation rules
+- Field descriptions and tooltips
+- Lists, maps, and nested configuration editors
+- Preventing bad configuration
+- Konfigyr can detect:
+  - Missing required fields
+  - Wrong types
+  - Bad formatting
+  - Deprecated properties
+  - Invalid enum values
+
+An example can be seen for the following `server.port` property:
+
+```json
+{
+  "name": "server.port",
+  "typeName": "java.lang.Integer",
+  "description" : "The port number which the server should listen to.",
+  "schema" : "{\"type\":\"integer\",\"format\":\"int32\",\"minimum\":1024,\"maximum\":65535}",
+  "defaultValue" : 8080,
+  "deprecation" : null
+}
+```
+
+Konfigyr will:
+
+- Render a number field
+- Prevent values outside the valid range
+- Provide inline validation
+
+This eliminates entire classes of runtime misconfiguration errors.
+
+## Secure Storage & Encryption
+
+Konfigyr stores configuration using a per-application encryption model. This ensures that sensitive data is never
+stored in plain text. The data encryption keys are generated per Namespace Service and are using 256-bit Advanced
+Encryption Standard (AES) cipher in the Galois Counter Mode (GCM) with 96-bit nonces — AES-256-GCM.
+
+<CardLink
+  title="Cryptography"
+  description="Learn more about how encryption and decryption works in Konfigyr."
+  href="/docs/architecture/cryptography"
+/>
+
+## Spring Cloud Integration
+
+Konfigyr integrates with Spring Cloud applications to provide dynamic configuration loading. Spring Boot applications
+authenticate with the IdP using client credentials and fetch configuration via REST API.
+
+Konfigyr acts as a sophisticated Spring Cloud Config Server, but with:
+
+- Metadata awareness
+- Stronger governance
+- Secure per-project encryption
+- Hot-reload support (via Spring Cloud Bus or custom refresh events)
+- Versioning and approvals
+
+## Kubernetes Secret Synchronization
+
+Konfigyr can sync configuration into Kubernetes as `Secrets` or `ConfigMaps`. A Kubernetes operator will
+periodically check for changes and trigger rolling restarts to keep your dependent Deployments resources depending on
+these Kubernetes secrets up to date. This enables fully automated, cloud-native configuration distribution.
+
+## Approval Workflow & Change Requests
+
+Konfigyr includes an optional governance workflow. When a developer proposes a configuration change, a change request
+is created. The reviewers and approvers can then review the diffs, approve or reject the change.
+
+Why does this matter? In enterprise environments, there are many requirements when it comes to configuration changes:
+
+- Audit logs
+- Controlled prod changes
+- Policy enforcement
+- Separation of duties
+
+**Konfigyr** has these policies built in.

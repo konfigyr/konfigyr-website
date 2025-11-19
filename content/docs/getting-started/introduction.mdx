@@ -1,0 +1,80 @@
+---
+title: What is Konfigyr?
+---
+import { CardLink } from '@/components/docs/card';
+
+Konfigyr is a configuration management platform built specifically for Spring Boot applications. It centralizes
+application configuration, enforces consistency across environments, and provides an intuitive type-safe editing
+experience based on Spring Boot’s property metadata. Its design eliminates config drift, improves developer ergonomics,
+and introduces enterprise‑grade governance for configuration changes.
+
+## Key Features
+
+- Type-Safe UI powered by property metadata ingestion
+- Multi-Tenant Architecture with namespaces and member roles
+- Per‑Project Encryption ensuring strict data isolation
+- Change Requests & Approvals for controlled configuration workflows
+- Versioning & Audit Trails for compliance
+- Dynamic Configuration Delivery for Spring Boot applications
+
+## Who is Konfigyr For?
+
+Konfigyr is built for:
+
+- Spring Boot developers
+- DevOps teams managing large microservice fleets
+- Platform engineering teams maintaining configuration governance
+- Enterprises that are in need of security, auditability, and strict environment isolation
+
+## How can I use Konfigyr?
+
+Konfigyr can be used in two ways:
+
+- A SaaS platform for managing configurations across services and environments.
+- An on‑premise solution for businesses requiring isolation, compliance, or tight security.
+
+Both options provide the same core platform capabilities. The decision depends on your operational model,
+trust boundaries, and compliance requirements. Our Cloud offering comes with built-in security and operational
+guarantees, a self-hosted deployment gives you full control but also full responsibility for securing and
+maintaining the system.
+
+<CardLink
+  title="Architecture Overview"
+  description="Understand how the system is structured and how each component interacts."
+  href="/docs/architecture/overview"
+/>
+
+### Konfigyr Cloud
+
+Konfigyr Cloud is our fully managed, production-ready platform available at https://app.konfigyr.com. It provides automatic
+updates, high availability, and secure infrastructure management. For most teams, Konfigyr Cloud is the fastest way
+to get started, removing the operational burden of running and maintaining the platform yourself.
+
+Choose our cloud offering if:
+
+- You prefer not to manage deployments, upgrades, or scaling
+- You want a secure, enterprise-grade hosted service
+- You need the simplest, lowest-overhead way to adopt Konfigyr
+
+By default, Konfigyr Cloud is a secure multi-tenant environment. For enterprises with advanced compliance or
+isolation requirements, dedicated cloud instances are available.
+
+### Self-Hosted Konfigyr
+
+Konfigyr can also be deployed directly into your own infrastructure. This option provides complete control over
+deployment, data residency, and operational security. In this model, your team manages uptime, patching, monitoring,
+and any required integrations.
+
+Choose self-hosting if:
+
+- You require full ownership of your data, security policies, and deployment model
+- Your compliance framework mandates on-premise or self-managed systems
+- You need to deeply integrate Konfigyr with internal tools or constrained environments
+
+Konfigyr supports a variety of deployment methods, including Docker, Docker Compose, or Kubernetes.
+
+<CardLink
+  title="Self-Hosting Guide"
+  description="Refer to the Self-Hosting Guide for more details."
+  href="/docs/architecture/overview"
+/>

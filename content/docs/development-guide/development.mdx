@@ -1,0 +1,141 @@
+---
+title: Local development
+description: Help set up and run the Konfigyr platform in local development.
+---
+import { KeyGenerator } from '@/components/docs/key-generator';
+import { CardLink } from '@/components/docs/card';
+
+This document describes how to set up and run the [Konfigyr project](https://github.com/konfigyr/konfigyr-platform)
+in your local environment. For other Github projects, please consult their respective `README` files.
+
+## Fork and clone the repo
+[Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the [repository]((https://github.com/konfigyr/konfigyr-platform))
+to your own GitHub account and then [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+it to your local machine. Once, you’ve done that, create a new branch:
+
+```bash
+git checkout -b MY_BRANCH_NAME
+```
+
+## Repository structure
+
+The repository is organized into different Gradle modules that map directly to the platform’s architectural boundaries.
+
+- `konfigyr-identity` module contains the Identity Provider built on Spring Authorization Server.
+- `konfigyr-api` module hosts the REST API and implements the core bounded contexts such as Namespaces, Services,
+Artifactory, and Cryptography.
+- `konfigyr-frontend` module contains the user interface based on [Tan Stack Start](https://tanstack.com/start).
+- `konfigyr-data` module contains the [Liquibase](https://www.liquibase.com/) database migrations and
+[jOOQ](https://www.jooq.org) utilities and converters.
+- `konfigyr-jooq-extensions` is a module that connects the jOOQ code generator to the Liquibase database migrations.
+
+## Set up the local environment
+
+After cloning the repository, developers start by configuring the local development stack. Running the Docker Compose
+file launches PostgreSQL and any supporting services required by the IdP and API.
+
+#### Spring Boot applications
+
+Each backend module can be run independently using Gradle, or an IDE of your choice, which starts them with hot reload
+support, thanks to `spring-boot-devtools`. You should start the Spring Boot applications using the `local` active
+profile, this would force Spring to load your custom `application-local.yml` files with local overrides.
+
+<CardLink
+  title="Spring Boot profiles"
+  description="Learn more about Spring Boot profiles."
+  href="https://docs.spring.io/spring-boot/reference/features/profiles.html"
+/>
+
+You can start by copying the contents of the `application-local.yml.template` located in `/src/main/resources`
+in each related Gradle module and follow the instructions in the comments.
+
+**Generate the Key Encryption Key**
+
+You would need to enter a Key Encryption Key property value in your configuration. You can use the following
+value or generate a new one:
+
+<KeyGenerator prefix="base64:" size={32} />
+
+#### Frontend application
+
+The frontend is started using `npm run dev`. To connect the UI application to the locally running REST API and Identity
+Provider, please add the following lines to the `.env.local` file:
+```dotenv
+# Konfigyr server locations, or whatever port you have configured in the application-local.yml files
+KONFIGYR_API_URL=http://localhost:8080
+KONFIGYR_ID_URL=http://localhost:8081
+
+# Provider the OAuth client credentials used to obtain the JWT access tokens from the Identity Provider
+KONFIGYR_OAUTH_CLIENT_ID=konfigyr
+KONFIGYR_OAUTH_CLIENT_SECRET={your-secret-here}
+
+# The session key used to encrypt the HTTP session cookies
+KONFIGYR_SESSION_KEY={use-generated-key-here}
+```
+
+**Generate the session key**
+
+Use the following value for your `KONFIGYR_SESSION_KEY` env property or generate a new one:
+
+<KeyGenerator size={32} />
+
+## Database migrations and jOOQ code generator
+
+Database schema migrations are located in the `konfigyr-data` Gradle module, namely in the `src/main/resources/migrations`
+directory. They are grouped by their respective domain and are sorted by the version number that introduced it.
+
+The migrations are applied in two different ways:
+- using the Spring Boot Liquibase starter when the application starts
+- using the jOOQ code generator with a custom Konfigyr jOOQ database extension
+
+#### Liquibase context
+
+The platform uses Liquibase contexts to separate database migrations for different services. The `identity` context is
+used by the `konfigyr-identity` service, and the `api` context is used by the `konfigyr-api` service.
+
+In case one database change should be applied to both services, it should be marked with the `api or identity` context.
+You can check out the following changeset example:
+
+```xml
+<changeSet author="author" id="your-migration" context="api or identity">
+    ...
+</changeSet>
+```
+
+#### jOOQ database extension
+
+The extension can be located in the `konfigyr-jooq-extensions` module. It contains a customized jOOQ `PostgresDatabase`
+that can be used with Gradle [gradle-jooq-plugin](https://github.com/etiennestuder/gradle-jooq-plugin).
+
+This customized database starts a PostgreSQL Test Container and executes the Liquibase migrations against it. Once the
+migrations are executed and the database schema is updated, the JOOQ generator would be executed.
+
+## Running and testing the system
+
+Once the environment is running, contributors can interact with all components as they would in production.
+
+The changes should include comprehensive tests to verify correctness and prevent regressions. Before submitting a
+pull request (PR), contributors should run existing tests locally and often add new tests relevant to their changes.
+
+Adhere to the project's specific testing framework, style guide, and architectural patterns. When in doubt, look at
+existing tests for guidance.
+
+## Making changes and submitting contributions
+
+Development follows a branch‑based workflow. Contributors create feature branches, commit changes using the conventional
+commit format, and open pull requests targeting the `main` branch depending on the release cycle. The CI pipeline
+automatically builds and tests all modules, runs static analysis, performs linting, and validates schema compatibility.
+
+Pull requests must pass all checks before they can be merged and should have at least one approval from the core
+maintainers.
+
+Please keep in mind that our integration tests rely on a Docker daemon to test against live services using
+[Testcontainers](https://testcontainers.com). The integration tests may require a couple of GB on your disk to store
+image size to be allocated to the Docker daemon.
+
+## Documentation
+
+Documentation is not maintained alongside the codebase. Any new feature or architectural change should include
+updates to the relevant documentation, including the SDK reference, API stability notes, or internal architecture
+summaries. Pull requests that require changes to documentation must reference the change requests against the
+documentation repository.

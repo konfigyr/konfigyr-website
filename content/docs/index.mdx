@@ -1,7 +1,120 @@
 ---
-title: Documentation
+title: Konfigyr Documentation
 ---
 
-## Welcome to Konfigyr
+import {
+  FingerprintIcon,
+  PanelsTopLeftIcon,
+  WebhookIcon,
+} from 'lucide-react';
+import { Card, CardLink } from '@/components/docs/card';
 
-The main documentation page.
+Welcome to the official documentation for Konfigyr, the Spring Boot Configuration Hub. This guide will help you
+understand what Konfigyr is, why it exists, and how to get started using or developing it.
+
+## What is Konfigyr?
+
+Konfigyr is a configuration management platform built specifically for Spring Boot applications. It centralizes
+application configuration, enforces consistency across environments, and provides an intuitive type-safe editing
+experience based on Spring Boot’s property metadata.
+
+Konfigyr can be used as:
+
+- A SaaS platform for managing configurations across services and environments.
+- An on‑premise solution for businesses requiring isolation, compliance, or tight security.
+
+Its design eliminates config drift, improves developer ergonomics, and introduces enterprise‑grade governance
+for configuration changes.
+
+## Key Features
+
+- Type-Safe UI powered by property metadata ingestion
+- Multi-Tenant Architecture with namespaces and member roles
+- Per‑Project Encryption ensuring strict data isolation
+- Change Requests & Approvals for controlled configuration workflows
+- Versioning & Audit Trails for compliance
+- Dynamic Configuration Delivery for Spring Boot applications
+
+## How Konfigyr Works
+
+Konfigyr consists of three core components:
+
+<div className="grid sm:grid-cols-3 gap-4">
+  <Card
+    title="Identity Provider (IdP)"
+    description="Handles authentication via OIDC and external identity providers."
+    icon={<FingerprintIcon size="2rem" />}
+  />
+  <Card
+    title="REST API"
+    description="Stores configuration, enforces authorization, and processes metadata."
+    icon={<WebhookIcon size="2rem" />}
+  />
+  <Card
+    title="Frontend Application"
+    description="Provides a developer-friendly interface for managing applications and configurations."
+    icon={<PanelsTopLeftIcon size="2rem" />}
+  />
+</div>
+
+These components work together to securely ingest, store, validate, and deliver application configurations.
+
+## Documentation Structure
+
+Use the navigation on the left to explore Konfigyr through the following sections:
+
+<div className="grid grid-cols-2 gap-4">
+  <CardLink
+    title="Architecture Overview"
+    description="Understand how the system is structured and how each component interacts."
+    href="/docs/architecture/overview"
+  />
+  <Card
+    title="Core Concepts"
+    description="Deep dive into Namespaces, Accounts, Members, Projects, Profiles, and Property Metadata."
+  />
+  <Card
+    title="Getting Started"
+    description="Learn how to set up your first namespace, connect a project, and push metadata."
+  />
+  <Card
+    title="Development Guide"
+    description="Instructions for setting up the development environment for contributors."
+  />
+  <Card
+    title="Deployment & Operations"
+    description="Guidance for deploying Konfigyr in production or on-premise."
+  />
+  <Card
+    title="Plugins"
+    description="How to use the Gradle/Maven plugins to ingest metadata automatically."
+  />
+</div>
+
+## Who is Konfigyr For?
+
+Konfigyr is built for:
+
+- Spring Boot developers
+- DevOps teams managing large microservice fleets
+- Platform engineering teams maintaining configuration governance
+- Enterprises in need of security, auditability, and strict environment isolation
+
+## Next Steps
+
+<div className="grid grid-cols-3 gap-4 mb-4">
+  <CardLink
+    title="Architecture Overview"
+    description="Begin with Architecture Overview to understand the system."
+    href="/docs/architecture/overview"
+  />
+  <Card
+    title="Getting started"
+    description="Jump directly into Getting Started to try Konfigyr immediately."
+  />
+  <Card
+    title="Development Guide"
+    description="Check out the Local Development Guide to set up your environment."
+  />
+</div>
+

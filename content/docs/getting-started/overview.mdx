@@ -1,0 +1,44 @@
+---
+title: Overview
+---
+import { Card, CardLink } from '@/components/docs/card';
+
+Welcome to the official documentation for Konfigyr, the Spring Boot Configuration Hub. This guide will help you
+understand what Konfigyr is, why it exists, and how to get started using or developing it.
+
+## Documentation Structure
+
+Use the navigation on the left to explore Konfigyr through the following sections:
+
+<div className="grid grid-cols-2 gap-4">
+  <CardLink
+    title="Getting Started"
+    description="Learn how to set up your first namespace, connect a project, and push metadata."
+    href="/docs/getting-started/introduction"
+  />
+  <CardLink
+    title="Core Concepts"
+    description="Deep dive into Namespaces, Accounts, Members, Projects, Profiles, and Property Metadata."
+    href="/docs/getting-started/how-konfigyr-works"
+  />
+  <CardLink
+    title="Architecture Overview"
+    description="Understand how the system is structured and how each component interacts."
+    href="/docs/architecture/overview"
+  />
+  <CardLink
+    title="Development Guide"
+    description="Instructions for setting up the development environment for contributors."
+    href="/docs/development-guide/getting-started"
+  />
+  <Card
+    title="Deployment & Operations"
+    description="Guidance for deploying Konfigyr in production or on-premise."
+    disabled={true}
+  />
+  <Card
+    title="Plugins"
+    description="How to use the Gradle/Maven plugins to ingest metadata automatically."
+    disabled={true}
+  />
+</div>

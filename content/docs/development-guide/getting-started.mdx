@@ -1,0 +1,65 @@
+---
+title: Getting started
+description: Contributing on the Konfigyr codebase
+---
+
+This guide provides an introduction for contributors who want to set up a local development environment for Konfigyr.
+It explains the prerequisites, the repository structure, the local runtime architecture, and the workflow needed to
+build, run, and extend the platform’s services. The goal is to make onboarding predictable and smooth, regardless
+of whether a contributor is working on backend services, frontend components, plugins, or infrastructure integrations.
+
+## Overview
+
+Konfigyr is composed of several repositories:
+- The [Konfigyr platform](https://github.com/konfigyr/konfigyr-platform) monorepo that contains the core
+platform services:
+    - Identity Provider
+    - REST API
+    - Frontend Application
+- The [Konfigyr plugins](https://github.com/konfigyr/konfigyr-pluing) repository that contains plugins for popular
+build tools:
+    - Gradle
+    - Maven - *planned*
+- The [Konfigyr website and documentation](https://github.com/konfigyr/konfigyr-website) that powers these docs and
+our online web presentation.
+- The [Konfigyr artifactory SDK](https://github.com/konfigyr/konfigyr-artifactory) that defines the API for
+interacting with the Konfigyr Artifactory instance.
+- The [Konfigyr cryptography library](https://github.com/konfigyr/konfigyr-crypto) that provides cryptographic
+utilities for Spring Boot applications.
+
+## Prerequisites
+
+Before contributing to Konfigyr, ensure that your local environment is prepared with the required toolchain.
+Java is required for the backend services, the SDK, the cryptography module, and the Gradle/Maven plugins.
+
+The Konfigyr ecosystem requires:
+
+- Java 21 or newer, along with Gradle for building and testing.
+- Frontend codebase requires Node.js and a package manager such as npm or pnpm.
+- Docker is used for spinning up development dependencies such as PostgreSQL and Testcontainers.
+
+## Bugs and issues
+
+Bug reports help make Konfigyr a better experience for everyone. When you report a bug, a template will be created
+automatically containing information we’d like to know. Before raising a new issue, please search existing ones to
+make sure you’re not creating a duplicate.
+
+## What to work on?
+
+You can start by browsing through our list of issues or adding your own that improves on the platform experience.
+Once you’ve decided on an issue, leave a comment and wait to get approved; this helps avoid multiple people working on
+the same issue.
+
+## Pull requests
+
+For a good pull request, make it small and focused on a single task, write a clear title and detailed description that
+includes context, guidance, and testing information, and always self-review and test it before submitting.
+
+Ensure the PR adheres to the project's style guides and includes relevant tests. Finally, be responsive to comments
+and proactively review others' PRs.
+
+## Licensing
+Most of Konfigyr’s code is under the MIT license, though some paid feature restrictions are covered by a proprietary
+license. Any third party components incorporated into our code are licensed under the original license provided by the
+applicable component owner.
+

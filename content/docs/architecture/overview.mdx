@@ -1,0 +1,135 @@
+---
+title: Overview
+description: Analysis of Konfigyr's goals and core components.
+---
+import { Card, CardLink } from '@/components/docs/card';
+
+Konfigyr is designed as a modular, security‑focused configuration management platform built specifically for Spring
+Boot–based systems. Its architecture is intentionally divided into clearly defined bounded contexts and interoperating
+services, each responsible for a distinct aspect of configuration ingestion, storage, validation, security, and delivery.
+
+The system emphasizes strong tenancy boundaries, cryptographic isolation, and a unified API surface that enables
+type-safe configuration experiences.
+
+## Goals & Requirements
+
+**Primary functional goals**
+
+* Provide a type-safe, metadata-driven configuration UX for Spring Boot apps.
+* Support versioned, auditable, and governed configuration changes.
+* Enable safe distribution of configuration to cloud-native and traditional workloads.
+* Integrate with enterprise identity providers and RBAC models.
+
+**Non-functional requirements**
+
+* Strong tenant isolation (cryptographic & access controls).
+* High availability for SaaS and well-documented HA for on-prem deployments.
+* Low latency reads for application bootstrap paths.
+* Scalable metadata ingestion for large microservice fleets.
+* Auditing, traceability, and compliance readiness (retention, export).
+
+**Security & compliance constraints**
+
+* Secrets must be encrypted per-project.
+* Key lifecycle should be auditable and rotatable.
+* Optional dedicated instances for strict isolation/regulatory needs.
+
+## Core components
+
+At the highest level, Konfigyr consists of three primary services: the Identity Provider, the REST API, and the
+Frontend Application. These services interact through OAuth2 and OpenID Connect to provide secure authentication,
+controlled access to configuration resources, and a user-friendly interface for developers and administrators.
+
+#### Identity Provider (IdP)
+
+The Identity Provider is responsible for all authentication flows and token issuance. Built using
+[Spring Authorization Server](https://spring.io/projects/spring-authorization-server), it acts as the central authority
+for identity, session management, and client credential handling. It delegates actual user authentication to external
+identity providers when necessary and exposes the standard OIDC endpoints consumed by both human and machine clients.
+
+The IdP defines what a user or a namespace application is allowed to access by embedding authorization claims and
+scopes into issued JWTs.
+
+<CardLink
+  title="Identity and Access Management"
+  description="Learn more about Konfigyr Identity Provider in this section."
+  href="/docs/getting-started/identity"
+/>
+
+#### Konfigyr service and REST API
+
+The REST API forms the core business layer of Konfigyr. As an OAuth2 Resource Server, it validates access tokens from
+the IdP and enforces fine-grained policies based on scopes, roles, and namespace membership. This service hosts the
+domain logic across several bounded contexts, including Namespaces and Accounts, Services and Configuration,
+Artifactory, and Cryptography. Each context encapsulates its own aggregates and invariants, ensuring separation of
+concerns and clear domain responsibilities. The REST API exposes endpoints for submitting metadata, managing service
+configuration, controlling encryption operations, and interacting with namespace integrations.
+
+#### Frontend application
+
+The Frontend Application is a stateless browser client that communicates exclusively with the REST API and the
+Identity Provider. It uses the Authorization Code flow with PKCE to authenticate users and renders all configuration
+editing experiences using JSON Schema definitions delivered by the Artifactory.
+
+The UI provides validation, guidance, and safe defaults to ensure that users can only produce valid configuration structures.
+
+## Metadata ingestion and configuration flow
+
+Build plugins for Maven and Gradle serve as the bridge between source code and the Konfigyr platform. These plugins
+extract configuration metadata from Spring Boot projects and submit that information to the Artifactory subsystem via
+the REST API.
+
+The Artifactory processes, indexes, and versions this metadata, enabling the platform to aggregate all configuration
+options available to a service based on the artifacts listed in its manifest.
+
+The Services and Configuration domain consumes this indexed metadata to offer type-safe configuration management.
+When a user edits configuration for a service, the UI renders input fields and validation rules derived from the
+metadata’s JSON Schema. The edited values are then validated on the server and stored securely using per-service
+encryption keys managed by the Cryptography subsystem.
+
+<CardLink
+  title="Artifactory"
+  description="Learn more about Artifactory in this section."
+  href="/docs/architecture/artifactory"
+/>
+
+## Cryptography and security
+
+Konfigyr enforces strict isolation by assigning each namespace its own keyset, protected by a Key Encryption Key
+stored in, most preferably, an external KMS. Every service within a namespace receives a dedicated Data Encryption Key,
+which is used to encrypt configuration values at rest using **AES-256-GCM**. The system supports automated key
+rotation and tracks the full lifecycle of all keys, ensuring long-term confidentiality and compliance.
+
+JWTs issued by the Identity Provider control access to all operations. Namespace membership and assigned roles
+determine what actions a user or integration client can perform. Sensitive credentials, such as OAuth client secrets,
+are generated through secure derivation processes and stored only in hashed form.
+
+<CardLink
+  title="Cryptography"
+  description="Learn more about encryption in this section."
+  href="/docs/architecture/cryptography"
+/>
+
+## High‑Level interaction summary
+
+The lifecycle of configuration within Konfigyr begins with code, where developers define configuration properties in
+Spring Boot applications. During the build process, metadata is extracted and submitted to the Artifactory.
+
+The Artifactory processes this input and stores it in a form that can be consumed by the Services domain. The UI
+retrieves metadata from the REST API to provide a guided, type-safe configuration experience. The Cryptography
+subsystem ensures that all sensitive values are encrypted before storage.
+
+When services start, they fetch their resolved configuration from Konfigyr in one of the following ways:
+
+<div className="grid md:grid-cols-2 gap-4">
+  <Card title="Runtime pull - Spring Cloud Config">
+    Services retrieves resolved config on startup and optionally polls or subscribes for changes.
+  </Card>
+  <Card title="Kubernetes sync">
+    A controller/operator authenticates to Konfigyr and periodically reconciles `Secrets` or `ConfigMaps`.
+  </Card>
+</div>
+
+This architecture ensures that configuration data is consistently typed, securely stored, historically traceable, and
+easily accessible to both humans and systems. It enables organizations to manage configuration across complex
+microservice landscapes with confidence, clarity, and strong governance.
