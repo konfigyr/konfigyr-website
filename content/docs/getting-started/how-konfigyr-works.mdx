@@ -17,19 +17,21 @@ or containerized environments.
 Konfigyr is built around three guiding principles:
 
 <div className="space-y-4">
-  <Card title="1. Configuration is king">
-    Configuration metadata should is considered a first-class citizen of the application source code,
-    not a separate artifact. The Spring Boot configuration metadata is used to validate configuration at the source.
+  <Card title="1. Configuration as a first-class concern">
+    Configuration metadata is part of the application’s source of truth, not an afterthought or external artifact.
+    By relying on Spring Boot’s metadata model, Konfigyr validates configuration at its origin and ensures that
+    what developers define is consistent with what services expect.
   </Card>
 
-  <Card title="2. Correctness">
-    Developers should never ship broken or invalid configs. A type-safe UI prevents typos, missing fields,
-    and invalid values.
+  <Card title="2. Configuration integrity">
+    No team should deploy broken or invalid configuration. Konfigyr’s type-safe UI ensures correctness by eliminating
+    typos, enforcing required fields, and preventing invalid values before they reach production.
   </Card>
 
-  <Card title="3. Security and distribution">
-    Configuration must be secure, isolated, and easy to distribute. Encryption, keysets, and multiple delivery
-    mechanisms ensure this.
+  <Card title="3. Secure and reliable distribution">
+    Configuration must remain protected, isolated, and easy to deliver across environments. Konfigyr provides strong
+    encryption, namespace-scoped keysets, and flexible delivery mechanisms to ensure that configuration stays secure
+    and consistently available to every service that needs it.
   </Card>
 </div>
 
