@@ -31,8 +31,20 @@ Artifactory, and Cryptography.
 
 ## Set up the local environment
 
-After cloning the repository, developers start by configuring the local development stack. Running the Docker Compose
-file launches PostgreSQL and any supporting services required by the IdP and API.
+After cloning the repository, developers start by configuring the local development stack. Running the
+[Docker Compose](https://github.com/konfigyr/konfigyr-project/blob/main/docker-compose.dev.yml) file launches
+PostgreSQL and any supporting services required by the IdP and API.
+
+#### SMTP server
+
+The platform uses [smtp4dev](https://github.com/rnwood/smtp4dev) as a local SMTP server for testing email notifications.
+You can access the SMTP server UI at `http://localhost:8880` where you can inspect sent emails and perform analysis and
+validation on our email templates.
+
+#### Keycloak
+
+The Identity Provider uses the [Keycloak](https://www.keycloak.org/) library to authenticate and import user accounts.
+You can access the Keycloak UI at `http://localhost:8881` where you can manage the realms, users and OAuth2 clients.
 
 #### Spring Boot applications
 
@@ -44,9 +56,11 @@ profile, this would force Spring to load your custom `application-local.yml` fil
   title="Spring Boot profiles"
   description="Learn more about Spring Boot profiles."
   href="https://docs.spring.io/spring-boot/reference/features/profiles.html"
+  target="_blank"
+  rel="noopener"
 />
 
-You can start by copying the contents of the `application-local.yml.template` located in `/src/main/resources`
+You can start by copying the contents of the `application-local.example.yml` located in `/src/main/resources`
 in each related Gradle module and follow the instructions in the comments.
 
 **Generate the Key Encryption Key**
