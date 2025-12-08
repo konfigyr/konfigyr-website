@@ -1,0 +1,64 @@
+---
+title: Lifecycle automation
+description: Automate the certificate lifecycle from issuance to renewal and revocation.
+---
+import { CardLink } from '@/components/docs/card';
+
+Managing certificates manually is error-prone and costly. Konfigyr automates the full certificate lifecycle,
+from issuance to renewal and revocation, ensuring that certificates remain valid and compliant across all environments.
+Automation reduces the risk of expired certificates, service disruptions, and security exposure.
+
+Lifecycle automation turns certificate management into a predictable and stable process, giving teams confidence
+that their infrastructure remains secure without constant manual intervention.
+
+### Discovery
+
+The process of identifying all certificates deployed across an organization's network and cloud platforms, including
+those that may be unmanaged or forgotten. This provides complete visibility and helps prevent unexpected outages
+or security gaps.
+
+### Enrollment
+
+Enrollment is the formal process of requesting a new certificate from a configured Certificate Authority (CA).
+
+Process can be summarized through the following steps:
+
+ * An entity (a person, server, application, or device) generates a unique cryptographic key pair.
+ * A [Certificate Signing Request (CSR)](https://en.wikipedia.org/wiki/Certificate_signing_request) containing the
+public key and relevant identifying information
+(like domain name, organization details) is sent to Konfigyr to be signed by the Certificate Authority (CA).
+ * The Konfigyr PKI then performs identity verification to ensure the requester is legitimate before issuing the
+certificate.
+
+This stage establishes initial trust, linking a verified identity to a specific public key.
+
+<CardLink
+  title="Certificate enrollment"
+  description="Learn more about how certificate enrollment works in Konfigyr."
+  href="/docs/pki/enrollment"
+/>
+
+### Deployment
+
+Once issued, the certificate is installed and correctly configured on the intended systems, such as web servers,
+load balancers, or user devices, to enable secure communication and authentication.
+
+### Renewals
+
+Konfigyr continuously monitors certificate health and schedules renewals based on defined policies, CA rules,
+and application requirements. Renewals can be performed silently in the background or with approval workflows,
+depending on your governance controls. Once renewed, certificates can be deployed automatically to workloads,
+pushed to external systems, or published through configured distribution channels.
+
+### Revocation
+
+Revocation workflows are also handled automatically through updated [CRLs](https://en.wikipedia.org/wiki/Certificate_revocation_list)
+and [OCSP](https://en.wikipedia.org/wiki/Online_Certificate_Status_Protocol) responders. This ensures that
+compromised or misused certificates no longer pose a risk. Konfigyr maintains historical records for renewed,
+replaced, or revoked certificates to support auditing and compliance verification.
+
+### Retirement
+
+The final stage where a certificate reaches the end of its useful life, either through expiration or revocation.
+Konfigyr would securely remove the certificate from active systems, cleaning up expired certificates, and securely
+delete any associated private keys to reduce the attack surface.

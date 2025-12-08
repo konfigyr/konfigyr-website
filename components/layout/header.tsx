@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { siteConfig } from '@/lib/config';
+import { ThemeSwitcher } from './theme-switcher';
 
 export function Header() {
   return (
@@ -11,12 +12,14 @@ export function Header() {
             {siteConfig.name}
           </Link>
 
-          <nav className="flex items-center justify-between">
+          <nav className="flex flex-1 items-center justify-between">
             <ul className="flex gap-2 items-center">
               <li>
                 <Link href="/docs">Docs</Link>
               </li>
             </ul>
+
+            <ThemeSwitcher />
           </nav>
         </div>
       </div>

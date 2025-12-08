@@ -3,6 +3,7 @@
   "pages": [
     "getting-started",
     "architecture",
+    "pki",
     "development-guide"
   ]
 }

@@ -17,6 +17,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { SearchToggle } from '@/components/search-toggle';
@@ -29,7 +30,7 @@ export interface DocsLayoutProps {
 export function DocsLayout({ tree, children }: DocsLayoutProps) {
   return (
     <TreeContextProvider tree={tree}>
-      <div id="nd-docs-layout" className="md:flex flex-1 flex-row [--fd-nav-height:56px]">
+      <div id="nd-docs-layout" className="md:flex flex-1 flex-row h-(--fd-content-height)">
         <div className="md:hidden p-2 flex items-center justify-between sticky top-(--fd-nav-height) z-30 bg-background border-b">
           <SidebarTrigger />
           <Breadcrumbs tree={tree} />
@@ -82,8 +83,8 @@ function DocsSidebar() {
   }, [root]);
 
   return (
-    <Sidebar className="sticky top-(--fd-nav-height) w-[286px] h-auto z-30 hidden overscroll-none bg-transparent lg:flex">
-      <SidebarContent>
+    <Sidebar className="sticky top-(--fd-nav-height) w-[286px] h-(--fd-content-height) z-30 hidden overflow-y-auto overscroll-none bg-transparent lg:flex">
+      <SidebarContent className="pb-8">
         <div className="hidden mt-4 px-2 md:block">
           <SearchToggle className="w-full"/>
         </div>
@@ -116,8 +117,23 @@ function SectionGroup({ section, className }: { section: PageTree.Folder, classN
   );
 }
 
-function SectionItem({ item, }: { item: PageTree.Node }) {
+function SectionItem({ item }: { item: PageTree.Node }) {
   const pathname = usePathname();
+
+  if (item.type === 'folder') {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton>
+          {item.name}
+        </SidebarMenuButton>
+        <SidebarMenuSub>
+          {item.children.map((child) => (
+            <SectionItem key={child.$id} item={child} />
+          ))}
+        </SidebarMenuSub>
+      </SidebarMenuItem>
+    );
+  }
 
   if (item.type === 'page') {
     return (

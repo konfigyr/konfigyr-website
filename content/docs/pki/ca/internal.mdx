@@ -1,0 +1,21 @@
+---
+title: Internal CA
+description: Create a private CA hierarchy
+---
+
+A private Certificate Authority (CA) enables organizations to issue certificates for internal services, workloads,
+and devices without relying on publicly trusted roots. Konfigyr provides a secure and fully managed environment for
+operating a private PKI hierarchy that includes offline root authorities and online intermediate authorities.
+
+This allows you to establish internal trust domains that align with your network architecture, environment boundaries,
+organizational units, or application groups.
+
+## How Konfigyr manages CAs
+
+Konfigyr supports creating and managing root CAs, generating intermediate CAs, defining issuance policies, and
+handling CA lifecycle tasks such as rotation and renewal. Root CA keys are stored offline or inside a hardware-backed
+third-party KMS to ensure they remain non-exportable and only used during controlled key ceremonies. Intermediate
+CA keys remain online but are always protected by the KMS, either as non-extractable asymmetric keys or as encrypted
+key material wrapped under a dedicated Key Encryption Key (KEK).
+
+Each CA is isolated per namespace to ensure strict separation of trust boundaries and prevent cross-tenant exposure.

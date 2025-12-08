@@ -1,0 +1,160 @@
+---
+title: Certificate enrollment
+description: Distribution and synchronization of X.509 certificates.
+---
+
+Certificate enrollment is the process by which a certificate is requested and issued for an identity such as a service,
+device, or workload. Konfigyr supports modern and standards-based enrollment methods to accommodate a wide range of
+use cases across cloud-native, enterprise, and device environments.
+
+Konfigyr validates all incoming requests based on defined issuance policies, identity mappings, and authorization rules.
+Whether the certificate originates from a private CA or an external CA, Konfigyr ensures the process follows security
+best practices, captures audit logs, and maintains consistency across your infrastructure. This creates a scalable
+certificate enrollment experience that fits seamlessly into modern automated environments.
+
+## Generating and storing certificate key material
+
+For issuing certificates, Konfigyr prefers consumer-generated CSRs so that private keys remain on the consumer side.
+When Konfigyr must generate keys on behalf of consumers, the platform encrypts these keys using a Data Encryption Key
+(DEK) that is wrapped and protected by the KEK stored in the external KMS. This allows Konfigyr to support secure
+storage, rotation, and controlled export workflows without exposing plaintext private keys in the database.
+
+Certificate data, encrypted key blobs, and metadata are stored within Konfigyr’s encrypted certificate store, while
+all critical cryptographic operations and unwrap calls are mediated through the KMS with full auditability.
+
+Certificate and key export are allowed only under strict, policy-driven workflows. When a consumer requires a
+private key and certificate bundle, Konfigyr temporarily unwraps the DEK via the KMS, decrypts the key inside a
+hardened service, assembles a PKCS#12 or encrypted PKCS#8 bundle, and delivers it through a time-limited,
+audited download mechanism. Passphrases and encryption layers are handled separately to prevent accidental exposure.
+
+Please keep in mind that exports of CA private keys are prohibited unless undergoing an exceptional, multi-party
+administrative process.
+
+## Enrollment methods
+
+Enrollment can be performed through Konfigyr’s REST API for direct programmatic access, enabling developers and
+services to request certificates as part of CI/CD pipelines or automated provisioning tools. Konfigyr also implements
+ACME for automated enrollment by web servers, ingress controllers, and service meshes, and provides
+EST (Enrollment over Secure Transport) for device-level certificate provisioning and IoT onboarding scenarios.
+
+### REST API
+
+The API enrollment method allows you to issue certificates against a specific Certificate Authority (CA) making an
+API request to Konfigyr SPI REST API.
+
+To issue a certificate, you must first create an OAuth2 client to get the access token and then submit an HTTP POST
+request to the Konfigyr SPI REST API. Here is an example of how to issue a certificate using cURL:
+
+```bash
+curl --location --request POST 'https://api.konfigyr.com/api/v1/kpi/certificates/enroll' \
+  --header 'Authorization: Bearer <access-token>' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+      "commonName": "example.com",
+      "ttl": "90d",
+      "signatureAlgorithm": "RSA-SHA256",
+      "keyAlgorithm": "RSA_2048",
+      "keyUsages": ["digital_signature", "key_encipherment"],
+      "extendedKeyUsages": ["server_auth"],
+      "altNames": [
+          {
+              "type": "DNS",
+              "value": "example.com"
+          },
+          {
+              "type": "DNS",
+              "value": "www.example.com"
+          }
+      ]
+  }'
+```
+
+The response contains the certificate details and the certificate chain, like so:
+
+```json
+{
+  "id": "446655440003",
+  "certificate": "-----BEGIN CERTIFICATE-----\nMIIFijCCA3...\n-----END CERTIFICATE-----",
+  "certificateChain": "-----BEGIN CERTIFICATE-----\nMIIFijCCA3...\n-----END CERTIFICATE-----",
+  "privateKey": "-----BEGIN PRIVATE KEY-----\nMIIJQwIBADANBgkqhki...\n-----END PRIVATE KEY-----"
+}
+```
+
+You can also use the Konfigyr KPI REST API to sign your own Certificate Signing Requests. This method is not
+transmitting the private over the wire, it is kept securely on the client side.
+
+```bash
+curl --location --request POST 'https://api.konfigyr.com/api/v1/kpi/certificates/sign' \
+  --header 'Authorization: Bearer <access-token>' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+      "csr": "-----BEGIN CERTIFICATE REQUEST-----\nMIIFijCCA3...\n-----END CERTIFICATE REQUEST-----",
+      "ttl": "90d"
+  }'
+```
+
+The response contains the following certificate details:
+
+```json
+{
+  "id": "446655440003",
+  "certificate": "-----BEGIN CERTIFICATE-----\nMIIFijCCA3...\n-----END CERTIFICATE-----",
+  "certificateChain": "-----BEGIN CERTIFICATE-----\nMIIFijCCA3...\n-----END CERTIFICATE-----"
+}
+```
+
+### ACME
+
+The [Automated Certificate Management Environment (ACME)](https://en.wikipedia.org/wiki/Automatic_Certificate_Management_Environment)
+protocol is designed for completely automating the lifecycle of public-facing TLS certificates, primarily those used
+for web servers (e.g., HTTPS). The process relies on clients proving domain control to a Certificate Authority (CA)
+through automated **challenges** rather than manual verification.
+
+Prerequisites:
+
+ * A resolvable Fully Qualified Domain Name (FQDN) that the Konfigyr can reach over the internet.
+ * An ACME client is installed on your server (e.g., Certbot, acme.sh, win-acme).
+ * Port `80` or `443` must be accessible from Konfigyr servers to the interface associated with your domain to
+perform domain validation challenges.
+ * Generate the External Account Binding (EAB) key ID and HMAC key data to link your client to your Konfigyr CA account.
+
+ACME Enrollment Process (HTTP-01 Challenge Flow) is highly automated and typically handled by the ACME client
+once configured:
+
+ * **Initiate Request**: The ACME client on your server sends an order to the Konfigyr ACME directory URL,
+requesting a certificate for a specific domain name.
+ * **Receive Challenge**: Konfigyr responds with one or more challenge types to verify domain ownership. For an
+`HTTP-01 challenge`, it provides a unique token.
+ * **Prepare Response**: Your ACME client places a specific file (containing the token and your account key fingerprint)
+at a well-known URL on your web server (e.g., yourdomain.com).
+ * **CA Verification**: Konfigyr PKI retrieves the that file from a specific URL. If the retrieved values are correct,
+domain ownership is confirmed.
+ * **Submit CSR**: Once authorized, your client generates a key pair locally and sends a Certificate Signing Request
+to the Konfigyr PKI to be signed by the configured CA.
+ * **Issue Certificate**: Konfigyr issues your X.509 certificate, which the client automatically installs on the server.
+
+### EST
+
+[Enrollment over Secure Transport (EST)](https://en.wikipedia.org/wiki/Enrollment_over_Secure_Transport) is a modern
+protocol (RFC 7030) designed as a more robust, secure successor to SCEP for general enterprise PKI use cases,
+especially for IoT and network devices. It primarily operates over HTTPS and relies heavily on TLS for security.
+
+Prerequisites:
+
+ * An EST client implementation (e.g., libest library).
+ * Access to the Konfigyr EST server's enrollment endpoint URL (e.g., https://api.konfigyr.com/.well-known/est/{id}/simpleenroll).
+ * The Konfigyr EST CA certificate must be trusted by the client device
+ * The client uses the generated trusted certificate to authenticate itself to the Konfigyr EST server.
+
+The EST process leverages standard HTTP/TLS methods, making it simple to implement:
+
+ * **Establish Secure Connection**: The EST client connects to the EST server URL over a secure TLS channel.
+The client uses the pre-installed CA root certificate or another trusted certificate to establish trust with the server.
+ * **Client Authentication**: The client authenticates itself to the server using the configured client certificate.
+ * **Submit CSR**: The client generates a key pair (public and private key) locally and sends a PKCS#10 CSR to the
+Konfigyr PKI server via an HTTPS request to the `/simpleenroll` endpoint.
+ * **CA Processing and Issuance**: Konfigyr verifies the client's identity and the CSR details.
+ * **Receive Certificate**: Konfigyr sends the newly issued X.509 certificate back to the client via an HTTPS response.
+The client securely receives and installs the certificate.
+ * **Retrieve CA Chain (Optional)**: The client can also use a dedicated EST endpoint (`/cacerts`) to fetch the
+necessary CA chain certificates to build a complete chain of trust.

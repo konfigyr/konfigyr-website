@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Metadata } from "next/types";
 
+import { ThemeProvider } from 'next-themes';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { siteConfig } from '@/lib/config';
 import { Header } from '@/components/layout/header';
@@ -54,12 +55,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-    <body className="flex flex-col min-h-screen bg-white">
-      <Header />
+    <body className="flex flex-col min-h-screen">
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        themes={["dark", "light"]}
+      >
+        <Header />
 
-      <RootProvider>
-        <main>{children}</main>
-      </RootProvider>
+        <RootProvider>
+          <main>{children}</main>
+        </RootProvider>
+      </ThemeProvider>
     </body>
     </html>
   )

@@ -1,0 +1,10 @@
+{
+  "title": "PKI",
+  "pages": [
+    "[Overview](/docs/pki/overview)",
+    "./ca",
+    "management",
+    "enrollment",
+    "alerts"
+  ]
+}

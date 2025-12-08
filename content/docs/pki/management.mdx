@@ -1,0 +1,84 @@
+---
+title: Certificate management
+description: Management of X.509 certificates.
+---
+import { CardLink } from '@/components/docs/card';
+
+Certificate management is the end-to-end process of handling the lifecycle of X.509 certificates that provide
+identity and encryption for services, devices, workloads, and users. At its core, certificate management ensures
+that certificates are issued securely, deployed correctly, kept valid over time, and retired when no longer needed.
+Without strong certificate management, organizations risk outages, security incidents, compliance failures,
+and trust breaches.
+
+Our approach to certificate management emphasizes automation, observability, and strong security guarantees.
+This allows organizations to centralize their certificate operations, eliminate manual errors, and ensure consistent
+trust across services and environments. Konfigyr provides a unified and automated certificate management system
+designed for large-scale, multi-tenant, and dynamic environments.
+
+## Certificate lifecycle
+
+Certificates go through a series of stages during their lifetime, from their creation to their retirement.
+This series of stages is often referred to as the **certificate lifecycle**. The names of these stages may vary
+from vendor to vendor, but they typically include discovery, enrollment, deployment, renewal, revocation, and retirement.
+
+### Discovery
+
+Certificate discovery is the first step, enabling Konfigyr to identify certificates across infrastructure and import
+them into the inventory whether they originate from Konfigyr’s private CAs, an external CA, or cloud certificate
+managers.
+
+Discovery is a process of identifying all certificates deployed across an organization's network and cloud platforms,
+including those that may be unmanaged or forgotten. This provides complete visibility and helps prevent unexpected
+outages or security gaps.
+
+### Enrollment
+
+Enrollment ensures that new certificates are issued through secure and standardized methods such as
+API-based requests, **ACME** flows, or device-oriented protocols like **EST**.
+
+Process can be summarized through the following steps:
+
+* An entity (a person, server, application, or device) generates a unique cryptographic key pair.
+* A [Certificate Signing Request (CSR)](https://en.wikipedia.org/wiki/Certificate_signing_request) containing the
+  public key and relevant identifying information
+  (like domain name, organization details) is sent to Konfigyr to be signed by the Certificate Authority (CA).
+* The Konfigyr PKI then performs identity verification to ensure the requester is legitimate before issuing the
+  certificate.
+
+This stage establishes initial trust, linking a verified identity to a specific public key.
+
+<CardLink
+  title="Certificate enrollment"
+  description="Learn more about how certificate enrollment works in Konfigyr."
+  href="/docs/pki/enrollment"
+/>
+
+### Deployment
+
+Once issued, the certificate must be installed and correctly configured on the intended systems, such as web servers,
+load balancers, or user devices, to enable secure communication and authentication.
+
+The Deployment phase places certificates and private keys where they are needed, using integrations with Kubernetes,
+service meshes, cloud key vaults, or direct download workflows for legacy environments.
+
+### Renewals
+
+Konfigyr continuously monitors certificate health and schedules renewals based on defined policies, CA rules,
+and application requirements. Renewals can be performed silently in the background or with approval workflows,
+depending on your governance controls. Once renewed, certificates can be deployed automatically to workloads,
+pushed to external systems, or published through configured distribution channels.
+
+### Revocation
+
+Revocation workflows are also handled automatically through updated [CRLs](https://en.wikipedia.org/wiki/Certificate_revocation_list)
+and [OCSP](https://en.wikipedia.org/wiki/Online_Certificate_Status_Protocol) responders. This ensures that
+compromised or misused certificates no longer pose a risk. Konfigyr maintains historical records for renewed,
+replaced, or revoked certificates to support auditing and compliance verification.
+
+### Retirement
+
+The final stage where a certificate reaches the end of its useful life, either through expiration or revocation.
+Konfigyr would securely remove the certificate from active systems, cleaning up expired certificates, and securely
+delete any associated private keys to reduce the attack surface.
+
+

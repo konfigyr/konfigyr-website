@@ -38,6 +38,10 @@
     --sidebar-ring: oklch(0.708 0 0);
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
+
+    /* Documentation variables */
+    --fd-nav-height: 56px;
+    --fd-content-height: calc(100vh - var(--fd-nav-height, 56px));
 }
 
 .dark {
