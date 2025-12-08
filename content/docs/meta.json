@@ -3,6 +3,7 @@
   "pages": [
     "getting-started",
     "architecture",
+    "kms",
     "pki",
     "development-guide"
   ]
