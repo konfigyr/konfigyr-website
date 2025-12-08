@@ -23,7 +23,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@/.source": [".source"]
+      "fumadocs-mdx:collections/*": [".source/*"]
     },
     "allowJs": true,
     "skipLibCheck": true
