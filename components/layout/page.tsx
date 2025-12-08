@@ -20,14 +20,14 @@ export interface DocsPageProps {
 export function DocsPage({ toc = [], ...props }: DocsPageProps) {
   return (
     <AnchorProvider toc={toc}>
-      <div className="flex w-full min-w-0 flex-col">
+      <div className="flex w-full min-w-0 flex-col overflow-auto">
         <article className="flex flex-1 flex-col w-full max-w-[860px] gap-4 p-4 md:px-6 md:mx-auto mb-8">
           {props.children}
           <Footer />
         </article>
       </div>
       {toc.length > 0 && (
-        <div className="sticky top-(--fd-nav-height) w-[286px] shrink-0 h-[calc(100dvh-var(--fd-nav-height))] p-4 overflow-auto max-xl:hidden">
+        <div className="sticky top-(--fd-nav-height) w-[286px] shrink-0 p-4 max-xl:hidden">
           <p className="text-sm text-fd-muted-foreground mb-2">On this page</p>
           <div className="flex flex-col">
             {toc.map((item) => (
@@ -89,18 +89,36 @@ function TocItem({ item }: { item: TOCItemType }) {
   );
 }
 
+interface FooterLinkItem {
+  url: string;
+  name: ReactNode;
+  section?: ReactNode;
+}
+
 function Footer() {
   const { root } = useTreeContext();
   const pathname = usePathname();
-  const flatten = useMemo(() => {
-    const result: PageTree.Item[] = [];
 
-    function scan(items: PageTree.Node[]) {
+  const flatten = useMemo(() => {
+    const result: FooterLinkItem[] = [];
+
+    function scan(items: PageTree.Node[], parent?: PageTree.Folder) {
       for (const item of items) {
-        if (item.type === 'page') result.push(item);
-        else if (item.type === 'folder') {
-          if (item.index) result.push(item.index);
-          scan(item.children);
+        if (item.type === 'page') {
+          result.push({
+            url: item.url,
+            name: item.name,
+            section: parent?.name,
+          });
+        } else if (item.type === 'folder') {
+          if (item.index) {
+            result.push({
+              url: item.index.url,
+              name: item.index.name,
+              section: item.name,
+            });
+          }
+          scan(item.children, item);
         }
       }
     }
@@ -128,19 +146,33 @@ function Footer() {
       {previous && (
         <Link href={previous.url} className="p-1 rounded-md pr-2 pl-7">
           <small className="text-muted-foreground">Previous</small>
-          <span className="block relative font-medium my-1">
-            {previous.name}
-            <ChevronLeft className="absolute top-0 -left-[28px]"/>
-          </span>
+          <div className="relative my-1">
+            {previous.section && (
+              <small className="block">
+                {previous.section}
+              </small>
+            )}
+            <span className="font-medium">
+              {previous.name}
+            </span>
+            <ChevronLeft className="absolute top-[10px] -left-[28px]"/>
+          </div>
         </Link>
       )}
       {next && (
         <Link href={next.url} className="p-1 rounded-md text-right pl-2 pr-7 ml-auto">
           <small className="text-muted-foreground">Next</small>
-          <span className="block relative font-medium my-1">
-            {next.name}
-            <ChevronRight className="absolute top-0 -right-[28px]"/>
-          </span>
+          <div className="relative my-1">
+            {next.section && (
+              <small className="block">
+                {next.section}
+              </small>
+            )}
+            <span className="font-medium">
+              {next.name}
+            </span>
+            <ChevronRight className="absolute top-[10px] -right-[28px]"/>
+          </div>
         </Link>
       )}
     </nav>

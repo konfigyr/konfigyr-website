@@ -1,0 +1,48 @@
+---
+title: Public key infrastructure
+description: Management of certificate authorities (CAs) and X.509 certificate lifecycle automation.
+---
+import { CardLink } from '@/components/docs/card';
+
+Public Key Infrastructure (PKI) is the foundation for establishing trust in distributed systems. It provides a
+structured way to create, manage, distribute, and validate digital certificates and the cryptographic keys behind them.
+
+PKI enables secure communication, authenticated identities, and encrypted data exchanges across applications, services,
+devices, and users. In modern cloud and hybrid environments, PKI plays a critical role in compliance, zero-trust
+security models, workload identity, and automation.
+
+Konfigyr includes a fully integrated PKI system designed to help organizations operate secure internal certificate
+authorities, manage X.509 certificates at scale, and automate their lifecycle across diverse infrastructure. It
+provides a unified control plane for certificate issuance, renewal, revocation, inventory, and distribution,
+while integrating seamlessly with existing identity, security, and cloud platforms.
+
+<CardLink title="Certificate management" href="/docs/pki/management">
+  Find out more about certificate management in Konfigyr.
+</CardLink>
+
+### Explore the PKI Features
+
+With Konfigyr PKI, you can model complex internal trust hierarchies, enforce certificate usage rules, and define the
+allowed identity attributes for issued certificates. Konfigyr automatically publishes CRLs and OCSP responses for
+revocation, and it maintains full auditability for all signing operations. This makes it possible to operate a
+private PKI with strong security guarantees while minimizing operational overhead.
+
+<div className="grid md:grid-cols-2 gap-4">
+  <CardLink title="Private CA" href="/docs/pki/ca/internal">
+    Create and manage your own private CA hierarchy, including offline roots and online intermediate authorities.
+  </CardLink>
+
+  <CardLink title="External CA integration" href="/docs/pki/ca/external">
+    Integrate Konfigyr with external certificate authorities such as Azure ADCS or any ACME-compatible public CA
+    including Let’s Encrypt and DigiCert.
+  </CardLink>
+
+  <CardLink title="Certificate enrollment" href="/docs/pki/enrollment">
+    Automatically distribute and synchronize issued certificates to cloud-native certificate managers.
+  </CardLink>
+
+  <CardLink title="Certificate alerts" href="/docs/pki/alerts">
+    Receive alerts and webhook events for important certificate lifecycle events, including upcoming expiration,
+    successful renewal, revocation, deployment failures, and policy violations.
+  </CardLink>
+</div>

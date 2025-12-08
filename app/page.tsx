@@ -10,7 +10,7 @@ export default function Page() {
             <h1 className="text-3xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
               Configuration made easy
             </h1>
-            <div className="mx-auto max-w-[700px] text-slate-600 md:text-lg lg:text-xl leading-relaxed">
+            <div className="mx-auto max-w-[700px] md:text-lg lg:text-xl leading-relaxed">
               <p className="my-4">
                 Secure secrets, zero headaches, and configs that actually work across all your environments.
               </p>

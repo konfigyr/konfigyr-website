@@ -1,0 +1,33 @@
+---
+title: Alerts
+description: Set up monitoring for certificates.
+---
+Certificate-related incidents, such as unexpected expirations or failed renewals, can cause major outages. Konfigyr
+provides built-in alerting and event notifications to keep teams informed of critical lifecycle changes and potential issues.
+
+Alerts are triggered for events such as upcoming expiration, failed issuance, failed deployment, revocation,
+or unusual certificate activity. Users can receive notifications through email, webhook integrations, chat platforms,
+or monitoring systems. These alerts help teams detect and resolve issues early, before they impact production systems.
+
+Konfigyr also emits structured lifecycle events that can be consumed by automation tools or SIEM systems,
+enabling organizations to build custom workflows or compliance checks around certificate health. With real-time
+visibility into the certificate state, teams can maintain higher reliability and reduce the operational risk
+associated with cryptographic assets.
+
+### Certificate lifecycle events
+
+The following events are emitted for each certificate:
+
+ * Certificate issued
+ * Certificate renewed
+ * Certificate revoked
+ * Certificate expiration warning
+ * Certificate deployments
+
+### Event transports
+
+You can configure Konfigyr to send certificate lifecycle events to the following destinations:
+ * Email
+ * Webhook
+ * Microsoft Teams
+ * Slack

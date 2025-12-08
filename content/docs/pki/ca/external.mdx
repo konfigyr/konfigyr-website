@@ -1,0 +1,20 @@
+---
+title: External CA
+description: Connect to external certificate authorities
+---
+
+Many organizations rely on external certificate authorities to meet compliance requirements, receive publicly
+trusted certificates, or integrate with existing enterprise PKI systems. Konfigyr allows you to seamlessly connect
+to external CAs, bringing them into a unified certificate management workflow.
+
+Konfigyr attempts to abstract the complexity of each external CA provider, offering a consistent enrollment and
+renewal interface regardless of backend. All certificates issued through external CAs are stored, tracked, and
+managed through Konfigyr’s certificate inventory and lifecycle automation system. This makes it possible to
+consolidate certificate governance across internal, cloud, and third-party CAs without modifying downstream systems.
+
+## Supported external Certification Authorities
+
+Konfigyr integrates with enterprise PKIs such as Microsoft Active Directory Certificate Services (ADCS) and supports
+ACME-compatible public CAs including Let’s Encrypt and DigiCert. These integrations enable automated issuance of
+server certificates, device certificates, user certificates, and workload identities based on your existing CA
+infrastructure or compliance mandates.
