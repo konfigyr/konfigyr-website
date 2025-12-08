@@ -1,0 +1,173 @@
+---
+title: KMS Operations
+description: Keyset operation usage for Konfigyr Key Management Service.
+---
+
+Konfigyr KMS exposes a clean and secure REST API for creating keys, wrapping and unwrapping data, performing signing
+operations, and managing key lifecycles. These examples illustrate the typical workflows developers and systems
+will interact with.
+
+### Supported algorithms
+
+Each Keyset has a purpose which defines the cryptographic capabilities of the key. The purpose is determined by
+the **Keyset algorithm**. Each algorithm defines what parameters must be used for each cryptographic operation.
+
+#### Signature algorithms
+
+| Algorithm | Description |
+| --- | --- |
+| `ED25519` | EdDSA on the Curve25519 in PureEdDSA mode, which takes raw data as input instead of hashed data |
+| `ECDSA_P256` **(recommended)** | ECDSA on the P-256 Curve with a SHA-256 digest |
+| `ECDSA_P384` | ECDSA on the P-384 Curve with a SHA-512 digest |
+| `ECDSA_P521` | ECDSA on the P-521 Curve with a SHA-512 digest |
+| `RSA_SSA_PSS_3072_SHA256_SHA256_32_F4` **(recommended)** | RSASSA-PSS 3072 bit key with a SHA-256 digest |
+| `RSA_SSA_PSS_4096_SHA512_SHA512_64_F4` | RSASSA-PSS 4096 bit key with a SHA-512 digest |
+| `RSA_SSA_PKCS1_3072_SHA256_F4` | RSASSA-PKCS1 v1_5 with a 3072 bit key and a SHA-256 digest |
+| `RSA_SSA_PKCS1_4096_SHA512_F4` | RSASSA-PKCS1 v1_5 with a 4096 bit key and a SHA-512 digest |
+
+#### Symmetric encryption algorithms
+
+| Algorithm | Description |
+| --- | --- |
+| `AES128_GCM` | AES with a 128 bit key in Galois Counter Mode (GCM) |
+| `AES256_GCM` **(recommended)** | AES with a 256 bit key in Galois Counter Mode (GCM) |
+
+#### Asymmetric encryption algorithms
+
+| Algorithm | Description |
+| --- | --- |
+| `ECIES_P256_HKDF_HMAC_SHA256_AES128_GCM` | ECIES with a P-256 Curve and AES-128 in Galois Counter Mode (GCM) |
+| `DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_AES_128_GCM` | DH-KEM with X25519 EC key agreement, KDF using SHA256 and AES-128 in Galois Counter Mode (GCM) |
+| `DHKEM_X25519_HKDF_SHA256_HKDF_SHA256_AES_256_GCM` | DH-KEM with X25519 EC key agreement, KDF using SHA256 and AES-256 in Galois Counter Mode (GCM) |
+| `DHKEM_P256_HKDF_SHA256_HKDF_SHA256_AES_128_GCM` | DH-KEM with P-256 EC key agreement, KDF using SHA256 and AES-128 in Galois Counter Mode (GCM) |
+| `DHKEM_P256_HKDF_SHA256_HKDF_SHA256_AES_256_GCM` | DH-KEM with P-256 EC key agreement, KDF using SHA256 and AES-256 in Galois Counter Mode (GCM) |
+
+### Generate a new keyset
+
+To create a new keyset, you need to specify the following:
+ * the algorithm that should be used for key generation
+ * a description of the keyset
+ * a list of tags that will be associated with the keyset
+
+```bash
+curl --location --request POST 'https://api.konfigyr/{namespace}/kms/keysets' \
+  --header 'Authorization: Bearer <access-token>' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "algorithm": "AES256_GCM"
+    "description": "Data Encryption Key for project-123-data",
+    "tags": ["project-123-data"]
+  }'
+```
+
+The successful response body contains the identifier and status of the created DEK:
+
+```json
+{
+  "id": "4f29ab1d",
+  "state": "ACTIVE",
+  "algorithm": "AES256_GCM",
+  "description": "Data Encryption Key for project-123-data",
+  "tags": ["project-123-data"],
+  "created_at": "2025-01-12T10:32:15Z"
+}
+```
+
+### Encrypt data
+
+To encrypt data, you need to specify the following:
+ * the Keyset identifier that supports the encrypt operation
+ * the plaintext data to be encrypted
+ * additional authenticated data to generate the authentication tag, proving its integrity. This is optional.
+
+```bash
+curl --location --request POST 'https://api.konfigyr/{namespace}/kms/keysets/{id}/encrypt' \
+  --header 'Authorization: Bearer <access-token>' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "plaintext": "data to be encrypted",
+    "aad": "additional authenticated data (optional)"
+  }'
+```
+
+The response body contains the encrypted data and the checksum of the ciphertext:
+
+```bash
+{
+  "ciphertext": "encrypted data",
+  "checksum": "SHA256 checksum of ciphertext"
+}
+```
+
+### Decrypt data
+
+To decrypt data, you need to specify the following:
+ * the Keyset identifier that supports the decrypt operation
+ * the encrypted data to be decrypted, or the `ciphertext`
+ * additional authenticated data, if it was used during encryption
+
+```bash
+curl --location --request POST 'https://api.konfigyr/{namespace}/kms/keysets/{id}/decrypt' \
+  --header 'Authorization: Bearer <access-token>' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "ciphertext": "encrypted data",
+    "aad": "additional authenticated data"
+  }'
+```
+
+The successful decrypt operation response should contain the decrypted data:
+
+```bash
+{
+  "plaintext": "data to be encrypted"
+}
+```
+
+### Create digital signatures
+
+To generate digital signatures, you need to specify the following:
+ * the Keyset identifier that supports signing operation
+ * the plaintext data for which the signature should be generated
+
+```bash
+curl --location --request POST 'https://api.konfigyr/{namespace}/kms/keysets/{id}/sign' \
+  --header 'Authorization: Bearer <access-token>' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "plaintext": "data to be signed"
+  }'
+```
+
+The response body contains the digital signature:
+
+```bash
+{
+  "signature": "digital signature"
+}
+```
+
+### Verify digital signature
+
+To verify digital signatures, you need to specify the following:
+ * the keyset identifier that supports signature verification operation
+ * the generated digital signature
+ * the plaintext data for which the signature should be generated
+
+```bash
+curl --location --request POST 'https://api.konfigyr/{namespace}/kms/keysets/{id}/verify' \
+  --header 'Authorization: Bearer <access-token>' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "plaintext": "data that was signed"
+    "signature": "digital signature"
+  }'
+```
+
+The successful verification operation response should contain a response with a `valid` field set to `true`:
+
+```bash
+{
+  "valid": true
+}
+```

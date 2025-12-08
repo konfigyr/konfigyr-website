@@ -1,0 +1,78 @@
+---
+title: Key Management Service
+description: Overview of Konfigyr KMS
+---
+import { CardLink } from '@/components/docs/card';
+
+Konfigyr KMS is the cryptographic backbone of the platform, responsible for generating, protecting, and managing
+cryptographic keys used across certificate management, identity services, secure storage, and signing operations.
+The KMS provides centralized, audited, and policy-driven control over encryption keys, enabling Konfigyr to enforce
+strong security guarantees while supporting multi-tenant environments and diverse cryptographic workflows.
+
+Konfigyr KMS is designed around modern envelope encryption patterns. The Key Encryption Keys (KEKs), reside in secure
+hardware-backed environments such as cloud KMS providers or dedicated HSMs. These KEKs never leave their secure
+boundary and are used exclusively to wrap and unwrap Data Encryption Keys (DEKs). DEKs are generated on demand
+and used to encrypt data, private keys, secrets, and certificates stored within Konfigyr. This architecture isolates
+key usage, reduces the risk of key exposure, and allows for seamless rotation of both DEKs and KEKs.
+
+The KMS also provides signing capabilities for components that require cryptographic assurances, including
+certificate authorities, workload identity systems, and configuration integrity features. All operations performed
+by the KMS are logged, versioned, and controlled through strict access policies. This ensures cryptographic
+trustworthiness without sacrificing operational flexibility.
+
+## Keyset structure
+
+In Konfigyr KMS the DEKs are referred to as **Keysets**. Keyset represents a logical collection of cryptographic keys
+that work together to support secure encryption, signing, and rotation for a specific scope such as a service,
+namespace, or certificate authority. Rather than handling individual keys in isolation, Konfigyr groups related keys
+into versioned keysets to enable automated rotation, maintain backward compatibility, and enforce predictable
+cryptographic behaviors across the platform.
+
+Each keyset contains multiple key versions, with one version designated as the primary key. The primary key is always
+used for new encryption or signing operations. Older key versions remain active exclusively for verifying signatures
+or decrypting data produced in earlier periods, preserving access to historical records while allowing continuous
+rotation. When a new key version is introduced, it becomes the primary while the previous version transitions into
+a non-primary state. These non-primary keys remain usable for read operations until they are explicitly retired or
+disabled based on policy.
+
+All keys stored within a keyset follow Konfigyr’s envelope encryption model. The raw key material is protected by a
+KEK or by a wrapped DEK encrypted using the external KMS or HSM. A keyset therefore contains metadata describing the
+key’s algorithm that defines the usage type, creation timestamp, version state, and the underlying wrapped key material.
+
+## Keyset lifecycle
+
+As already mentioned, every cryptographic key follows a well-defined lifecycle that ensures long-term security,
+compliance, and operational continuity. The lifecycle begins with key creation, where new key material is generated
+as a wrapped DEK encrypted via configured KEK. Once created, the key enters the active state, where it performs its
+intended cryptographic functions such as encrypting or signing data.
+
+Over time, keys naturally progress into rotation as part of Konfigyr’s automated or policy-driven renewal workflows.
+When a new key version is introduced, it becomes the primary version used for new operations, while older versions
+remain valid for decrypting existing data or verifying historical signatures. This approach ensures uninterrupted
+access to previously encrypted material while continuously reducing exposure to long-lived cryptographic keys.
+
+Keys can later transition into a retired state once they are no longer required for operational reads. At this stage,
+they remain stored in the KMS but cannot be used for new cryptographic operations. Retirement policies define when
+keys should be disabled or fully destroyed, depending on retention requirements, audit needs, and compliance constraints.
+
+When a key is destroyed, both its wrapped key material and associated metadata are securely removed, ensuring the
+key cannot be recovered or misused.
+
+All lifecycle events, including creation, promotion, rotation, retirement, and destruction, are fully audited and
+governed through access control policies. This ensures that Konfigyr KMS provides a predictable, transparent,
+and secure cryptographic environment across multi-tenant deployments while maintaining strong guarantees around
+data protection and long-term trust.
+
+## KMS usage in Konfigyr
+
+Keysets serve multiple roles within Konfigyr, including protecting certificate private keys, encrypting namespace
+configuration data, securing identity artifacts, and performing cryptographic signing for PKI operations. Every service
+created in Konfigyr receives its own dedicated keyset to guarantee strict, cryptographically enforced isolation between
+Namespaces. Additional keysets support internal subsystems such as JWT signing, certificate authority operations,
+and audit log integrity.
+
+<CardLink
+  title="Cryptography"
+  description="Learn more about how encryption and decryption works in Konfigyr."
+  href="/docs/architecture/cryptography"
+/>

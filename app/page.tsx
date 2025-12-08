@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 export default function Page() {
   return (
     <>
-      <section className="container py-18 md:py-30 lg:py-40">
+      <section className="container mx-auto py-18 md:py-30 lg:py-40">
         <div className="flex flex-col items-center space-y-8 text-center">
           <div className="space-y-4 max-w-4xl">
             <h1 className="text-3xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
